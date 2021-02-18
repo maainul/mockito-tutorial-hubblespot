@@ -22,8 +22,149 @@ Terminology of Fake
 ![Screenshot from 2021-02-17 16-52-32](https://user-images.githubusercontent.com/37740006/108393168-99923700-723d-11eb-8417-d9d7957128f2.png)
 
 # Steps TO be Followed for the Fake
-![Screenshot from 2021-02-17 17-08-49](https://user-images.githubusercontent.com/37740006/108393865-48367780-723e-11eb-9749-7e6e509d0a6a.png)
-![Screenshot from 2021-02-17 17-12-31](https://user-images.githubusercontent.com/37740006/108394014-70be7180-723e-11eb-8f47-42def0faddce.png)
-![Screenshot from 2021-02-17 17-12-53](https://user-images.githubusercontent.com/37740006/108394124-92b7f400-723e-11eb-9169-455ec73a1e5d.png)
-![Screenshot from 2021-02-17 17-13-29](https://user-images.githubusercontent.com/37740006/108394154-9ea3b600-723e-11eb-8648-1375cd05adb8.png)
-![Screenshot from 2021-02-17 17-29-41](https://user-images.githubusercontent.com/37740006/108394787-4caf6000-723f-11eb-8999-f6caf9b9c9e3.png)
+Service Class:
+```java
+package com.mainul.mockito.test_doubles.fake;
+
+public class BookService {
+    private BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public void addBook(Book book){
+        bookRepository.save(book);
+    }
+
+    public int findNumberOfBooks(){
+        return bookRepository.findAll().size();
+    }
+
+}
+```
+Repository Class
+```java
+package com.mainul.mockito.test_doubles.fake;
+
+import java.util.Collection;
+
+public interface BookRepository {
+    void save(Book book);
+
+    Collection<Book> findAll();
+}
+
+```
+Book class / Entity Class
+```java
+package com.mainul.mockito.test_doubles.fake;
+
+import java.time.LocalDate;
+
+public class Book {
+    private String bookId;
+    private String title;
+    private int price;
+    private LocalDate publishdDate;
+
+    public Book(String bookId, String title, int price, LocalDate publishdDate) {
+        this.bookId = bookId;
+        this.title = title;
+        this.price = price;
+        this.publishdDate = publishdDate;
+    }
+
+    public String getBookId() {
+        return bookId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public LocalDate getPublishdDate() {
+        return publishdDate;
+    }
+
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public void setPublishdDate(LocalDate publishdDate) {
+        this.publishdDate = publishdDate;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "bookId='" + bookId + '\'' +
+                ", title='" + title + '\'' +
+                ", price=" + price +
+                ", publishdDate=" + publishdDate +
+                '}';
+    }
+}
+
+```
+FakeBook class for testing purpose
+```java
+package com.mainul.mockito.test_doubles.fake;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FakeBookRepository implements BookRepository{
+
+    Map<String,Book> bookStore = new HashMap<>();
+
+
+
+    @Override
+    public void save(Book book) {
+        bookStore.put(book.getBookId(),book);
+
+    }
+
+    @Override
+    public Collection<Book> findAll() {
+        return bookStore.values();
+    }
+}
+
+```
+FakeTest Class
+```java
+package com.mainul.mockito.test_doubles.fake;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.time.LocalDate;
+
+
+public class FakeTest {
+    @Test
+    public void testFake() {
+        BookRepository bookRepository = new FakeBookRepository();
+        BookService bookService = new BookService(bookRepository);
+
+        bookService.addBook(new Book("1234", "Mockito In Action", 250, LocalDate.now()));
+        bookService.addBook(new Book("1235", "JUnit 5 In Action", 200, LocalDate.now()));
+
+        assertEquals(2,bookService.findNumberOfBooks());
+    }
+}
+```
